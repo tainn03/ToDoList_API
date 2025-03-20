@@ -43,7 +43,7 @@ public class TaskDependencyAppServiceImpl implements TaskDependencyAppService {
     public List<TaskResponse> viewAllDependencies(Long taskId) {
         return taskDependencyService.getAllDependencies(taskId).stream()
                 .map(taskDependency -> {
-                    TaskResponse response = taskCacheService.getTask(taskDependency.getTaskId());
+                    TaskResponse response = taskCacheService.getTaskByCache(taskDependency.getTaskId());
                     response.setDependencies(viewAllDependencies(taskDependency.getTaskId()));
                     return response;
                 })

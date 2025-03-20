@@ -11,6 +11,7 @@ import com.tainn.todo.domain.repository.TaskRepository;
 import com.tainn.todo.domain.service.TaskDependencyService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import static lombok.AccessLevel.PRIVATE;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
+@Slf4j
 public class TaskDependencyServiceImpl implements TaskDependencyService {
     TaskDependencyRepository repository;
     TaskRepository taskRepository;
@@ -78,6 +80,7 @@ public class TaskDependencyServiceImpl implements TaskDependencyService {
 
     @Override
     public TaskDependency addDependency(Long taskId, Long dependencyId) {
+        checksDuplicateDependency(taskId, dependencyId);
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
         Task dependsOnTask = taskRepository.findById(dependencyId).orElseThrow(() -> new BusinessException(ErrorCode.TASK_NOT_FOUND));
         TaskDependency taskDependency = TaskDependency.builder()
@@ -85,6 +88,12 @@ public class TaskDependencyServiceImpl implements TaskDependencyService {
                 .dependsOnTask(dependsOnTask)
                 .build();
         return save(taskDependency);
+    }
+
+    private void checksDuplicateDependency(Long taskId, Long dependencyId) {
+        if (repository.findByTaskIdAndDependsOnTaskId(taskId, dependencyId).isPresent()) {
+            throw new BusinessException(ErrorCode.DUPLICATE_DEPENDENCY);
+        }
     }
 
     @Override
@@ -96,62 +105,57 @@ public class TaskDependencyServiceImpl implements TaskDependencyService {
 
     @Override
     public boolean hasCircularDependency(Long taskId, Long dependencyId) {
-        // Xây dựng danh sách kề (Adjacency List)
         Map<Long, List<Long>> adjacencyList = new HashMap<>();
+        adjacencyList
+                .computeIfAbsent(taskId, k -> new ArrayList<>())
+                .add(dependencyId);
         for (TaskDependency dependency : getAll()) {
             adjacencyList
                     .computeIfAbsent(dependency.getTask().getId(), k -> new ArrayList<>())
                     .add(dependency.getDependsOnTask().getId());
         }
 
-        // Thêm phụ thuộc mới vào danh sách kề
-        adjacencyList
-                .computeIfAbsent(taskId, k -> new ArrayList<>())
-                .add(dependencyId);
-
-        // Trạng thái duyệt của node (0 = chưa thăm, 1 = đang duyệt, 2 = đã duyệt)
         Map<Long, Integer> status = new HashMap<>();
+        // 0: WHITE, 1: GRAY, 2: BLACK
         for (Long taskKey : adjacencyList.keySet()) {
             status.put(taskKey, 0);
         }
 
-        // Danh sách để lưu trữ đường đi
         List<Long> path = new ArrayList<>();
 
-        // Kiểm tra chu trình bằng DFS
         return detectCycle(taskId, adjacencyList, status, path);
     }
 
-    // DFS để phát hiện vòng lặp
+    // DFS
     private boolean detectCycle(Long task, Map<Long, List<Long>> adjacencyList, Map<Long, Integer> status, List<Long> path) {
-        status.put(task, 1); // Đánh dấu là đang duyệt (GRAY)
-        path.add(task); // Thêm task vào đường đi
+        status.put(task, 1);
+        path.add(task);
 
         for (Long dependency : adjacencyList.getOrDefault(task, Collections.emptyList())) {
-            if (status.getOrDefault(dependency, 0) == 1) { // Nếu node đang duyệt, có vòng lặp
-                path.add(dependency); // Thêm node gây vòng lặp vào đường đi
-                logCycle(path, dependency); // Log đường đi
+            if (status.getOrDefault(dependency, 0) == 1) {
+                path.add(dependency);
+                logCycle(path, dependency);
                 return true;
             }
-            if (status.getOrDefault(dependency, 0) == 0) { // Nếu chưa duyệt, tiếp tục DFS
+            if (status.getOrDefault(dependency, 0) == 0) {
                 if (detectCycle(dependency, adjacencyList, status, path)) {
                     return true;
                 }
             }
         }
 
-        status.put(task, 2); // Đánh dấu là đã duyệt xong (BLACK)
-        path.remove(task); // Loại bỏ task khỏi đường đi
+        status.put(task, 2);
+        path.remove(task);
         return false;
     }
 
-    // Log đường đi của vòng lặp
+    // Log path of cycle
     private void logCycle(List<Long> path, Long start) {
         StringBuilder cycle = new StringBuilder();
         for (Long node : path) {
             cycle.append(node).append(" -> ");
         }
         cycle.delete(cycle.length() - 4, cycle.length());
-        System.out.println("Circular dependency detected: " + cycle);
+        log.info("CIRCULAR DEPENDENCY DETECTED: {}", cycle);
     }
 }

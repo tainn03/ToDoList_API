@@ -28,7 +28,7 @@ import static lombok.AccessLevel.PRIVATE;
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Slf4j
 public class TaskAppServiceImpl implements TaskAppService {
-    TaskService service;
+    TaskService taskService;
     TaskCacheAppService taskCacheService;
     TaskMapper mapper;
     LocalCache<TaskResponse> localCache;
@@ -37,45 +37,50 @@ public class TaskAppServiceImpl implements TaskAppService {
 
     @Override
     public TaskResponse getById(Long id) {
-        return taskCacheService.getTask(id);
+        return taskCacheService.getTaskByCache(id);
     }
 
     @Override
     public Page<TaskResponse> getAll(int page, int size, String sort, String direction) {
-        return service.getAll(page, size, sort, direction).map(mapper::toDTO);
+        return taskService.getAll(page, size, sort, direction).map(mapper::toDTO);
+    }
+
+    @Override
+    public Page<TaskResponse> getAllWithFilter(int page, int size, String sort, String direction, String status, String title) {
+        validateStatus(status);
+        return taskService.getAllWithFilter(page, size, sort, direction, TaskStatus.valueOf(status), title).map(mapper::toDTO);
     }
 
     @Override
     public TaskResponse update(Long id, TaskRequest taskRequest) {
         validateRequest(taskRequest);
-        Task task = service.getById(id);
+        Task task = taskService.getById(id);
         if (task == null) {
             throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
         }
 
         updateTaskAttributes(task, taskRequest);
-        return mapper.toDTO(service.save(task));
+        return mapper.toDTO(taskService.save(task));
     }
 
     @Override
     public TaskResponse updateStatus(Long id, String status) {
-        Task task = service.getById(id);
+        Task task = taskService.getById(id);
         if (task == null) {
             throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
         }
         validateStatus(status);
 
-        task.setStatus(TaskStatus.valueOf(status));
-        return mapper.toDTO(service.save(task));
+        return mapper.toDTO(taskService.updateStatus(id, TaskStatus.valueOf(status)));
     }
 
     @Override
     public void delete(Long id) {
-        Task task = service.getById(id);
+        Task task = taskService.getById(id);
         if (task == null) {
             throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
         }
-        service.delete(id);
+        taskService.delete(id);
         deleteCache(id);
     }
 
@@ -91,7 +96,7 @@ public class TaskAppServiceImpl implements TaskAppService {
     public TaskResponse create(TaskRequest taskRequest) {
         validateRequest(taskRequest);
         Task task = mapper.toEntity(taskRequest);
-        return mapper.toDTO(service.save(task));
+        return mapper.toDTO(taskService.save(task));
     }
 
     private void validateRequest(TaskRequest taskRequest) {

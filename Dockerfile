@@ -1,11 +1,11 @@
 # Step 1: Build the application
-FROM maven:3.8.1 AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /build
 COPY . /build
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # Step 2: Package the application
-FROM openjdk:22
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=builder /build/target/*.jar /app/app.jar
 EXPOSE 8080

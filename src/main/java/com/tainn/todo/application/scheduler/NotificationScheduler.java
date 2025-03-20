@@ -20,14 +20,15 @@ public class NotificationScheduler {
     TaskService taskService;
 
     // Notification system for upcoming/overdue tasks
-    @Scheduled(fixedRate = 1000 * 60)
+    @Scheduled(fixedRate = 1000 * 60 * 30)
     public void notificationUpcomingTasks() {
-        log.info("NOTIFICATION UPCOMING TASKS");
         taskService.getAll().forEach(task -> {
-            if (LocalDateTime.now().isAfter(task.getDueDate()) && isNotDone(task.getStatus())) {
-                log.info("Task {} is overdue task", task.getId());
-            } else if (LocalDateTime.now().isBefore(task.getDueDate()) && isNotDone(task.getStatus())) {
-                log.info("Task {} is upcoming task", task.getId());
+            if (isNotDone(task.getStatus())) {
+                if (LocalDateTime.now().isAfter(task.getDueDate())) {
+                    log.info("TASK {} IS OVERDUE", task.getId());
+                } else if (LocalDateTime.now().isAfter(task.getDueDate().plusHours(6))) {
+                    log.info("TASK {} IS UPCOMING", task.getId());
+                }
             }
         });
     }

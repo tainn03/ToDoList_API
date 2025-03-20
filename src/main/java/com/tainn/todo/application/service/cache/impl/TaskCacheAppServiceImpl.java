@@ -27,7 +27,7 @@ public class TaskCacheAppServiceImpl implements TaskCacheAppService {
     RedisCache redisCache;
 
     @Override
-    public TaskResponse getTask(Long id) {
+    public TaskResponse getTaskByCache(Long id) {
         TaskResponse response = getTaskFromLocalCache(id);
         if (response != null) {
             return response;

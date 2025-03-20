@@ -10,8 +10,16 @@ services:
       MYSQL_ROOT_PASSWORD: sa2008
       MYSQL_DATABASE: todo
       MYSQL_PASSWORD: sa2008
+    volumes:
+      - ./mysql-config.cnf:/etc/mysql/conf.d/mysql-config.cnf
+    command: --defaults-extra-file=/etc/mysql/conf.d/mysql-config.cnf
     ports:
-      - "3300:3306"
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - todo-net
 
@@ -19,27 +27,29 @@ services:
     image: redis:latest
     container_name: pre-todo-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     environment:
       - REDIS_PASSWORD=
     command: [ "redis-server", "--protected-mode", "no" ]
     networks:
       - todo-net
 
-#  app:
-#    build: .
-#    image: todo-app:latest
-#    container_name: todo-app
-#    environment:
-#      SPRING_DATASOURCE_URL: jdbc:mysql://pre-todo-mysql:3306/todo
-#      SPRING_DATASOURCE_USERNAME: root
-#      SPRING_DATASOURCE_PASSWORD: sa2008
-#      SPRING_REDIS_HOST: pre-todo-redis
-#      SPRING_REDIS_PORT: 6379
-#    ports:
-#      - "8080:8080"
-#    depends_on:
-#      - mysql
-#      - redis
-#    networks:
-#      - todo-net
+  app:
+    build: .
+    image: todo-app:latest
+    container_name: todo-app
+    environment:
+      DB_URL: jdbc:mysql://pre-todo-mysql:3306/todo
+      DB_USERNAME: root
+      DB_PASSWORD: sa2008
+      SPRING_REDIS_HOST: pre-todo-redis
+      SPRING_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - todo-net

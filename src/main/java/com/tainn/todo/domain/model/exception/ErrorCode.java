@@ -28,7 +28,8 @@ public enum ErrorCode {
     DUE_DATE_MUST_BE_GREATER_THAN_CURRENT_DATE(40003, "Due date must be greater than the current date", HttpStatus.BAD_REQUEST),
     INVALID_STATUS(40004, "Invalid status", HttpStatus.BAD_REQUEST),
     CIRCULAR_DEPENDENCY(40005, "Circular dependency detected", HttpStatus.BAD_REQUEST),
-    ;
+    DEPENDENCIES_NOT_COMPLETED(40006, "Dependencies are not completed", HttpStatus.BAD_REQUEST),
+    DUPLICATE_DEPENDENCY(40007, "Duplicate dependency", HttpStatus.BAD_REQUEST);
     int code;
     String message;
     HttpStatusCode statusCode;

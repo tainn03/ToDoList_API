@@ -11,6 +11,8 @@ public interface TaskAppService {
 
     Page<TaskResponse> getAll(int page, int size, String sortBy, String direction);
 
+    Page<TaskResponse> getAllWithFilter(int page, int size, String sort, String direction, String status, String title);
+
     TaskResponse update(Long id, TaskRequest taskRequest);
 
     TaskResponse updateStatus(Long id, String status);
