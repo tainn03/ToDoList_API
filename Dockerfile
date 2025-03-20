@@ -2,6 +2,7 @@
 FROM maven:3.8.1 AS builder
 WORKDIR /build
 COPY . /build
+RUN mvn clean package
 
 # Step 2: Package the application
 FROM openjdk:22
