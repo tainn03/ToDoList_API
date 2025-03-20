@@ -10,9 +10,6 @@ services:
       MYSQL_ROOT_PASSWORD: sa2008
       MYSQL_DATABASE: todo
       MYSQL_PASSWORD: sa2008
-    volumes:
-      - ./mysql-config.cnf:/etc/mysql/conf.d/mysql-config.cnf
-    command: --defaults-extra-file=/etc/mysql/conf.d/mysql-config.cnf
     ports:
       - "3306:3306"
     healthcheck:

@@ -62,7 +62,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/tasks",
+					"raw": "{{base_url}}/api/v1/tasks?page=0&size=10&sortBy=id&direction=asc",
 					"host": [
 						"{{base_url}}"
 					],
@@ -70,6 +70,24 @@
 						"api",
 						"v1",
 						"tasks"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						},
+						{
+							"key": "sortBy",
+							"value": "id"
+						},
+						{
+							"key": "direction",
+							"value": "asc"
+						}
 					]
 				},
 				"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
@@ -98,7 +116,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"title\": \"Task F\",\n    \"description\": \"This is a test description\",\n    \"dueDate\": \"2025/03/25 20:50:31\",\n    \"priority\": 1\n}",
+					"raw": "{\n\t\"title\": \"Task 6\",\n    \"description\": \"This is a test description\",\n    \"dueDate\": \"2025/03/25 20:50:31\",\n    \"priority\": 1\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -142,7 +160,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"title\": \"Task B\",\n    \"description\": \"This is a test description\",\n    \"dueDate\": \"2025/03/20 20:50:31\",\n    \"priority\": 1\n}",
+					"raw": "{\n\t\"title\": \"Task 2\",\n    \"description\": \"This is a test description\",\n    \"dueDate\": \"2025/03/20 20:50:31\",\n    \"priority\": 1\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -257,24 +275,21 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/dependencies/add?taskId=6&dependencyId=1",
+					"raw": "{{base_url}}/api/v1/tasks/1/dependencies?dependencyId=6",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"dependencies",
-						"add"
+						"tasks",
+						"1",
+						"dependencies"
 					],
 					"query": [
 						{
-							"key": "taskId",
-							"value": "6"
-						},
-						{
 							"key": "dependencyId",
-							"value": "1"
+							"value": "6"
 						}
 					]
 				},
@@ -303,24 +318,21 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/dependencies/remove?taskId=2&dependencyId=6",
+					"raw": "{{base_url}}/api/v1/tasks/1/dependencies?dependencyId=2",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"dependencies",
-						"remove"
+						"tasks",
+						"1",
+						"dependencies"
 					],
 					"query": [
 						{
-							"key": "taskId",
-							"value": "2"
-						},
-						{
 							"key": "dependencyId",
-							"value": "6"
+							"value": "2"
 						}
 					]
 				},
@@ -349,15 +361,22 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/v1/dependencies/1",
+					"raw": "{{base_url}}/api/v1/tasks/1/dependencies?dependencyId=2",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"v1",
-						"dependencies",
-						"1"
+						"tasks",
+						"1",
+						"dependencies"
+					],
+					"query": [
+						{
+							"key": "dependencyId",
+							"value": "2"
+						}
 					]
 				},
 				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
