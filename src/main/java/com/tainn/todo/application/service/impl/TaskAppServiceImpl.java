@@ -54,7 +54,7 @@ public class TaskAppServiceImpl implements TaskAppService {
 
     @Override
     public TaskResponse update(Long id, TaskRequest taskRequest) {
-        validateRequest(taskRequest);
+        validateTime(taskRequest);
         Task task = taskService.getById(id);
         if (task == null) {
             throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
@@ -85,6 +85,19 @@ public class TaskAppServiceImpl implements TaskAppService {
         deleteCache(id);
     }
 
+    @Override
+    public TaskResponse create(TaskRequest taskRequest) {
+        validateTime(taskRequest);
+        Task task = mapper.toEntity(taskRequest);
+        return mapper.toDTO(taskService.save(task));
+    }
+
+    private void validateTime(TaskRequest taskRequest) {
+        if (LocalDateTime.parse(taskRequest.getDueDate(), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")).isBefore(LocalDateTime.now())) {
+            throw new BusinessException(ErrorCode.DUE_DATE_MUST_BE_GREATER_THAN_CURRENT_DATE);
+        }
+    }
+
     private TaskStatus validateStatus(String status) {
         try {
             if (status != null) {
@@ -94,19 +107,6 @@ public class TaskAppServiceImpl implements TaskAppService {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
         }
         return null;
-    }
-
-    @Override
-    public TaskResponse create(TaskRequest taskRequest) {
-        validateRequest(taskRequest);
-        Task task = mapper.toEntity(taskRequest);
-        return mapper.toDTO(taskService.save(task));
-    }
-
-    private void validateRequest(TaskRequest taskRequest) {
-        if (LocalDateTime.parse(taskRequest.getDueDate(), DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")).isBefore(LocalDateTime.now())) {
-            throw new BusinessException(ErrorCode.DUE_DATE_MUST_BE_GREATER_THAN_CURRENT_DATE);
-        }
     }
 
     private void updateTaskAttributes(Task task, TaskRequest taskRequest) {

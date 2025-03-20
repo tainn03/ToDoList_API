@@ -20,7 +20,7 @@ public class NotificationScheduler {
     TaskService taskService;
 
     // Notification system for upcoming/overdue tasks
-    @Scheduled(fixedRate = 1000 * 60 * 30)
+    @Scheduled(fixedRate = 1000 * 60)
     public void notificationUpcomingTasks() {
         taskService.getAll().forEach(task -> {
             if (isNotDone(task.getStatus())) {

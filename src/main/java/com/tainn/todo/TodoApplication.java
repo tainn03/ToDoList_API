@@ -14,7 +14,6 @@ public class TodoApplication {
 
     public static void main(String[] args) {
         SpringApplication springApplication = new SpringApplication(TodoApplication.class);
-//        springApplication.addInitializers(new DotEnvApplicationContextInitializer());
         springApplication.run(args);
     }
 
