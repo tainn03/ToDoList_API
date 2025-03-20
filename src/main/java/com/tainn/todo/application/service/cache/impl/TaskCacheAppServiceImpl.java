@@ -3,6 +3,8 @@ package com.tainn.todo.application.service.cache.impl;
 import com.tainn.todo.application.service.cache.TaskCacheAppService;
 import com.tainn.todo.domain.model.dto.response.TaskResponse;
 import com.tainn.todo.domain.model.entity.Task;
+import com.tainn.todo.domain.model.exception.BusinessException;
+import com.tainn.todo.domain.model.exception.ErrorCode;
 import com.tainn.todo.domain.model.mapper.TaskMapper;
 import com.tainn.todo.domain.service.TaskService;
 import com.tainn.todo.infrastructure.cache.local.LocalCache;
@@ -61,6 +63,9 @@ public class TaskCacheAppServiceImpl implements TaskCacheAppService {
 
     private TaskResponse getTaskById(Long homestayId) {
         Task response = service.getById(homestayId);
+        if (response == null) {
+            throw new BusinessException(ErrorCode.TASK_NOT_FOUND);
+        }
         log.info("GET TASK {} FROM DATABASE", homestayId);
         return mapper.toDTO(response);
     }

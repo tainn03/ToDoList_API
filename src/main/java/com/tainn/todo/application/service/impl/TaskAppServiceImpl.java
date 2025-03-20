@@ -47,8 +47,9 @@ public class TaskAppServiceImpl implements TaskAppService {
 
     @Override
     public Page<TaskResponse> getAllWithFilter(int page, int size, String sort, String direction, String status, String title) {
-        validateStatus(status);
-        return taskService.getAllWithFilter(page, size, sort, direction, TaskStatus.valueOf(status), title).map(mapper::toDTO);
+        TaskStatus taskStatus = validateStatus(status);
+        Page<Task> tasks = taskService.getAllWithFilter(page, size, sort, direction, taskStatus, title);
+        return tasks.isEmpty() ? Page.empty() : tasks.map(mapper::toDTO);
     }
 
     @Override
@@ -84,12 +85,15 @@ public class TaskAppServiceImpl implements TaskAppService {
         deleteCache(id);
     }
 
-    private void validateStatus(String status) {
+    private TaskStatus validateStatus(String status) {
         try {
-            TaskStatus.valueOf(status);
+            if (status != null) {
+                return TaskStatus.valueOf(status);
+            }
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.INVALID_STATUS);
         }
+        return null;
     }
 
     @Override
